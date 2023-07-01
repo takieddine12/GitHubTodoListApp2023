@@ -73,6 +73,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       selectedDate,
       platformChannelSpecifics,
       payload: 'alarm',
+      androidAllowWhileIdle: true 
     );
   }
 
