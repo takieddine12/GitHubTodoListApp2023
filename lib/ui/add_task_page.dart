@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -17,19 +18,62 @@ class AddTaskPage extends StatefulWidget {
 }
 
 class _AddTaskPageState extends State<AddTaskPage> {
+  late TimeOfDay _pickedTime;
+  late DateTime _dateTime;
+  late final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   late TaskController _taskController;
   final TextEditingController _taskTitleController = TextEditingController();
   final TextEditingController _taskDateController = TextEditingController();
   final TextEditingController _taskHourController = TextEditingController();
-  late String pickedDay;
-  late String pickedHour;
-  late String hourAmPm;
+  late String _pickedDay;
+  late String _pickedHour;
+  late String _hourAmPm;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _taskController = Get.find();
+    initializeNotifications();
+  }
+
+  void initializeNotifications() async {
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+
+    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+
+    await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
+
+  Future<void> onSelectNotification(String? payload) async {
+    // Handle notification tap
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()));
+  }
+
+  Future<void> scheduleAlarm(DateTime selectedDate,String taskTitle) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+      'channel_id',
+      'channel_name',
+      'channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await _flutterLocalNotificationsPlugin.schedule(
+      0,
+      'Task Alarm',
+      taskTitle,
+      selectedDate,
+      platformChannelSpecifics,
+      payload: 'alarm',
+    );
   }
 
   @override
@@ -142,7 +186,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         title: d.Value(title),
                         date:  d.Value(date),
                         hour:  d.Value(hour),
-                        hourFormat: d.Value(hourAmPm));
+                        hourFormat: d.Value(_hourAmPm));
                     int result = await _taskController.insertTask(task);
                     if(result == -1){
                       if(mounted){
@@ -151,6 +195,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     }
                     else {
                       if(mounted){
+                        print("selected date " + _dateTime.toString());
+                        scheduleAlarm(_dateTime, title);
                         FlutterToastr.show("Task successfully added", context);
                       }
                     }
@@ -209,8 +255,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
     if(pickedDate != null){
       String formattedDate = DateFormat("yyyy-MM-dd").format(pickedDate);
       setState(() {
-        pickedDay = formattedDate;
-        _taskDateController.text = pickedDay;
+        _pickedDay = formattedDate;
+        _taskDateController.text = _pickedDay;
+        _dateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          _pickedTime.hour,
+          _pickedTime.minute,
+        );
       });
     }
 
@@ -222,13 +275,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
     if(hour != null){
       if(mounted){
+        _pickedTime = hour;
         var df = DateFormat("hh:mm");
         var dfPM = DateFormat('h a');
         var dt = df.parse(hour.format(context));
         setState(() {
-          pickedHour = df.format(dt);
-          _taskHourController.text = pickedHour;
-           hourAmPm = dfPM.format(dt);
+          _pickedHour = df.format(dt);
+          _taskHourController.text = _pickedHour;
+           _hourAmPm = dfPM.format(dt);
         });
       }
     }

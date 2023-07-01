@@ -25,7 +25,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Lottie.asset("assets/json/lottie.json",height: 200 , width: 200,repeat: false,reverse: false),
+        child: Lottie.asset("assets/json/lottie.json",height: 200 , width: 200,repeat: true,reverse: false),
       ),
     );
   }
