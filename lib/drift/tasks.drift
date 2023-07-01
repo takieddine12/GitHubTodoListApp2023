@@ -1,0 +1,9 @@
+
+
+CREATE TABLE tasks (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  date TEXT,
+  hour TEXT,
+  hourFormat TEXT
+ );
