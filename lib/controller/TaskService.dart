@@ -23,4 +23,8 @@ class TaskService {
     return await _myDatabase.deleteTask(index);
   }
 
+  Future<int> updateTask(Task task) async {
+    return await _myDatabase.updateTask(task);
+  }
+
 }

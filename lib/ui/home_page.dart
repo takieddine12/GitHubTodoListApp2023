@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:get/get.dart';
+import 'package:drift/drift.dart' as d;
 import 'package:todo_app/controller/task_controller.dart';
+import 'package:todo_app/drift/todo_helper.dart';
 import 'package:todo_app/extras.dart';
 import 'package:todo_app/ui/add_task_page.dart';
 
@@ -149,7 +151,8 @@ class _HomePageState extends State<HomePage> {
                                 if(mounted){
                                   FlutterToastr.show('Failed To Delete Task', context);
                                 }
-                              } else {
+                              }
+                              else {
                                 if(mounted){
                                   FlutterToastr.show('Task Successfully Deleted', context);
                                   _taskController.getTasks();
@@ -161,17 +164,61 @@ class _HomePageState extends State<HomePage> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             child: Row(
                               children: [
-                                Checkbox(value: false, onChanged: (value){
-
+                                Checkbox(
+                                    value: _taskController.tasksList.value![index].isChecked == 0 ? false : true,
+                                    onChanged: (value){
+                                      if(value == true){
+                                        Task task = Task(
+                                            id: _taskController.tasksList.value![index].id,
+                                            title: _taskController.tasksList.value![index].title,
+                                            date: _taskController.tasksList.value![index].date,
+                                            hour: _taskController.tasksList.value![index].hour,
+                                            hourFormat: _taskController.tasksList.value![index].hour,
+                                            isChecked : 1
+                                        );
+                                        _taskController.updateTask(task);
+                                        _taskController.getTasks();
+                                      } else {
+                                        Task task = Task(
+                                            id: _taskController.tasksList.value![index].id,
+                                            title: _taskController.tasksList.value![index].title,
+                                            date: _taskController.tasksList.value![index].date,
+                                            hour: _taskController.tasksList.value![index].hour,
+                                            hourFormat: _taskController.tasksList.value![index].hour,
+                                            isChecked : 0
+                                        );
+                                        _taskController.updateTask(task);
+                                        _taskController.getTasks();
+                                      }
                                 }),
                                 const SizedBox(width: 10,),
-                                Column(
+                                Expanded(child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(_taskController.tasksList.value![index].title!,style: getFont().copyWith(fontSize: 17),),
-                                    Text("On :  ${_taskController.tasksList.value![index].date!}",style: getFont().copyWith(fontSize: 15 , color: Colors.indigo),),
-                                    Text("At :  ${_taskController.tasksList.value![index].hourFormat!}",style: getFont().copyWith(fontSize: 15,color: Colors.green),)
+                                    Text(_taskController.tasksList.value![index].title!,
+                                      style: getFont().copyWith(fontSize: 17,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
+                                    Text("On :  ${_taskController.tasksList.value![index].date!}",
+                                      style: getFont().copyWith(fontSize: 15 , color: Colors.indigo,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
+                                    Text("At :  ${_taskController.tasksList.value![index].hourFormat!}",
+                                      style: getFont().copyWith(fontSize: 15,color: Colors.green,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),)
                                   ],
+                                )),
+                                Visibility(
+                                   visible: _taskController.tasksList.value![index].isChecked == 0 ? false : true,
+                                   child :  IconButton(onPressed: () async {
+                                     int result = await _taskController.deleteTask(_taskController.tasksList.value![index].id);
+                                     if(result == -1){
+                                       if(mounted){
+                                         FlutterToastr.show('Failed To Delete Task', context);
+                                       }
+                                     }
+                                     else {
+                                       if(mounted){
+                                         FlutterToastr.show('Task Successfully Deleted', context);
+                                         _taskController.getTasks();
+                                       }
+                                     }
+                                   }, icon: const Icon(Icons.delete,size: 30,color: Colors.blueGrey,))
                                 )
                               ],
                             ),

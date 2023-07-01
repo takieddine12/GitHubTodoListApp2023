@@ -40,8 +40,16 @@ class Tasks extends Table with TableInfo<Tasks, Task> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       $customConstraints: '');
+  static const VerificationMeta _isCheckedMeta =
+      const VerificationMeta('isChecked');
+  late final GeneratedColumn<int> isChecked = GeneratedColumn<int>(
+      'isChecked', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
-  List<GeneratedColumn> get $columns => [id, title, date, hour, hourFormat];
+  List<GeneratedColumn> get $columns =>
+      [id, title, date, hour, hourFormat, isChecked];
   @override
   String get aliasedName => _alias ?? 'tasks';
   @override
@@ -72,6 +80,10 @@ class Tasks extends Table with TableInfo<Tasks, Task> {
           hourFormat.isAcceptableOrUnknown(
               data['hourFormat']!, _hourFormatMeta));
     }
+    if (data.containsKey('isChecked')) {
+      context.handle(_isCheckedMeta,
+          isChecked.isAcceptableOrUnknown(data['isChecked']!, _isCheckedMeta));
+    }
     return context;
   }
 
@@ -91,6 +103,8 @@ class Tasks extends Table with TableInfo<Tasks, Task> {
           .read(DriftSqlType.string, data['${effectivePrefix}hour']),
       hourFormat: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}hourFormat']),
+      isChecked: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}isChecked']),
     );
   }
 
@@ -109,8 +123,14 @@ class Task extends DataClass implements Insertable<Task> {
   final String? date;
   final String? hour;
   final String? hourFormat;
+  final int? isChecked;
   const Task(
-      {required this.id, this.title, this.date, this.hour, this.hourFormat});
+      {required this.id,
+      this.title,
+      this.date,
+      this.hour,
+      this.hourFormat,
+      this.isChecked});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -127,6 +147,9 @@ class Task extends DataClass implements Insertable<Task> {
     if (!nullToAbsent || hourFormat != null) {
       map['hourFormat'] = Variable<String>(hourFormat);
     }
+    if (!nullToAbsent || isChecked != null) {
+      map['isChecked'] = Variable<int>(isChecked);
+    }
     return map;
   }
 
@@ -140,6 +163,9 @@ class Task extends DataClass implements Insertable<Task> {
       hourFormat: hourFormat == null && nullToAbsent
           ? const Value.absent()
           : Value(hourFormat),
+      isChecked: isChecked == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isChecked),
     );
   }
 
@@ -152,6 +178,7 @@ class Task extends DataClass implements Insertable<Task> {
       date: serializer.fromJson<String?>(json['date']),
       hour: serializer.fromJson<String?>(json['hour']),
       hourFormat: serializer.fromJson<String?>(json['hourFormat']),
+      isChecked: serializer.fromJson<int?>(json['isChecked']),
     );
   }
   @override
@@ -163,6 +190,7 @@ class Task extends DataClass implements Insertable<Task> {
       'date': serializer.toJson<String?>(date),
       'hour': serializer.toJson<String?>(hour),
       'hourFormat': serializer.toJson<String?>(hourFormat),
+      'isChecked': serializer.toJson<int?>(isChecked),
     };
   }
 
@@ -171,13 +199,15 @@ class Task extends DataClass implements Insertable<Task> {
           Value<String?> title = const Value.absent(),
           Value<String?> date = const Value.absent(),
           Value<String?> hour = const Value.absent(),
-          Value<String?> hourFormat = const Value.absent()}) =>
+          Value<String?> hourFormat = const Value.absent(),
+          Value<int?> isChecked = const Value.absent()}) =>
       Task(
         id: id ?? this.id,
         title: title.present ? title.value : this.title,
         date: date.present ? date.value : this.date,
         hour: hour.present ? hour.value : this.hour,
         hourFormat: hourFormat.present ? hourFormat.value : this.hourFormat,
+        isChecked: isChecked.present ? isChecked.value : this.isChecked,
       );
   @override
   String toString() {
@@ -186,13 +216,14 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('title: $title, ')
           ..write('date: $date, ')
           ..write('hour: $hour, ')
-          ..write('hourFormat: $hourFormat')
+          ..write('hourFormat: $hourFormat, ')
+          ..write('isChecked: $isChecked')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, date, hour, hourFormat);
+  int get hashCode => Object.hash(id, title, date, hour, hourFormat, isChecked);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -201,7 +232,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.title == this.title &&
           other.date == this.date &&
           other.hour == this.hour &&
-          other.hourFormat == this.hourFormat);
+          other.hourFormat == this.hourFormat &&
+          other.isChecked == this.isChecked);
 }
 
 class TasksCompanion extends UpdateCompanion<Task> {
@@ -210,12 +242,14 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String?> date;
   final Value<String?> hour;
   final Value<String?> hourFormat;
+  final Value<int?> isChecked;
   const TasksCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.date = const Value.absent(),
     this.hour = const Value.absent(),
     this.hourFormat = const Value.absent(),
+    this.isChecked = const Value.absent(),
   });
   TasksCompanion.insert({
     this.id = const Value.absent(),
@@ -223,6 +257,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.date = const Value.absent(),
     this.hour = const Value.absent(),
     this.hourFormat = const Value.absent(),
+    this.isChecked = const Value.absent(),
   });
   static Insertable<Task> custom({
     Expression<int>? id,
@@ -230,6 +265,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? date,
     Expression<String>? hour,
     Expression<String>? hourFormat,
+    Expression<int>? isChecked,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -237,6 +273,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (date != null) 'date': date,
       if (hour != null) 'hour': hour,
       if (hourFormat != null) 'hourFormat': hourFormat,
+      if (isChecked != null) 'isChecked': isChecked,
     });
   }
 
@@ -245,13 +282,15 @@ class TasksCompanion extends UpdateCompanion<Task> {
       Value<String?>? title,
       Value<String?>? date,
       Value<String?>? hour,
-      Value<String?>? hourFormat}) {
+      Value<String?>? hourFormat,
+      Value<int?>? isChecked}) {
     return TasksCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       date: date ?? this.date,
       hour: hour ?? this.hour,
       hourFormat: hourFormat ?? this.hourFormat,
+      isChecked: isChecked ?? this.isChecked,
     );
   }
 
@@ -273,6 +312,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     if (hourFormat.present) {
       map['hourFormat'] = Variable<String>(hourFormat.value);
     }
+    if (isChecked.present) {
+      map['isChecked'] = Variable<int>(isChecked.value);
+    }
     return map;
   }
 
@@ -283,7 +325,8 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('title: $title, ')
           ..write('date: $date, ')
           ..write('hour: $hour, ')
-          ..write('hourFormat: $hourFormat')
+          ..write('hourFormat: $hourFormat, ')
+          ..write('isChecked: $isChecked')
           ..write(')'))
         .toString();
   }

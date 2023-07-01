@@ -19,7 +19,7 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage> {
   late TimeOfDay _pickedTime;
-  late DateTime _dateTime;
+  late DateTime? _dateTime;
   late final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   late TaskController _taskController;
   final TextEditingController _taskTitleController = TextEditingController();
@@ -73,7 +73,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       selectedDate,
       platformChannelSpecifics,
       payload: 'alarm',
-      androidAllowWhileIdle: true 
+      androidAllowWhileIdle: true,
     );
   }
 
@@ -187,7 +187,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         title: d.Value(title),
                         date:  d.Value(date),
                         hour:  d.Value(hour),
-                        hourFormat: d.Value(_hourAmPm));
+                        hourFormat: d.Value(_hourAmPm),
+                        isChecked: const d.Value(0));
                     int result = await _taskController.insertTask(task);
                     if(result == -1){
                       if(mounted){
@@ -197,7 +198,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     else {
                       if(mounted){
                         print("selected date " + _dateTime.toString());
-                        scheduleAlarm(_dateTime, title);
+                        scheduleAlarm(_dateTime!, title);
                         FlutterToastr.show("Task successfully added", context);
                       }
                     }
@@ -247,24 +248,21 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   void pickDate() async {
+
     var pickedDate = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
         firstDate: DateTime(2023),
         lastDate: DateTime(2030));
 
+
+
     if(pickedDate != null){
-      String formattedDate = DateFormat("yyyy-MM-dd").format(pickedDate);
+      String formattedDate = DateFormat("yyyy-MM-dd").format(pickedDate!);
+      _dateTime = DateTime(pickedDate!.year, pickedDate.month, pickedDate.day, _pickedTime.hour, _pickedTime.minute);
       setState(() {
         _pickedDay = formattedDate;
         _taskDateController.text = _pickedDay;
-        _dateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          _pickedTime.hour,
-          _pickedTime.minute,
-        );
       });
     }
 

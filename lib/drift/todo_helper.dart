@@ -20,17 +20,17 @@ class MyDatabase extends _$MyDatabase {
 
   Future<List<Task>> getTasks() => select(tasks).get();
 
-  Future<int> saveTask(TasksCompanion companion) => into(tasks).insert(companion);
+  Future<int> saveTask(TasksCompanion companion) =>
+      into(tasks).insert(companion);
 
   Future<int> deleteAllTasks() => delete(tasks).go();
 
-  Future<int> deleteTask(int id) => (delete(tasks)..where((tbl) => tbl.id.equals(id))).go();
+  Future<int> deleteTask(int id) =>
+      (delete(tasks)..where((tbl) => tbl.id.equals(id))).go();
 
-  // Future<int> updateEmployee(TasksCompanion companion) async {
-  //   return await update(tasks).write(TasksCompanion(
-  //       title: Value(companion.name)
-  //   ));
-  // }
+  Future<int> updateTask(Task task) =>
+      (update(tasks)..where((tbl) => tbl.id.equals(task.id))).write(TasksCompanion(isChecked : Value(task.isChecked)));
+
 }
 
 LazyDatabase _openConnection() {
