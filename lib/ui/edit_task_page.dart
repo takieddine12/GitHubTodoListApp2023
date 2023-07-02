@@ -1,24 +1,26 @@
-
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-import 'package:todo_app/controller/task_controller.dart';
-import 'package:todo_app/drift/todo_helper.dart';
-import 'package:todo_app/extras.dart';
 import 'package:drift/drift.dart' as d;
-import 'package:todo_app/ui/home_page.dart';
+import '../controller/task_controller.dart';
+import '../drift/todo_helper.dart';
+import '../extras.dart';
+import 'home_page.dart';
 
-class AddTaskPage extends StatefulWidget {
-  const AddTaskPage({Key? key}) : super(key: key);
+class EditTaskPage extends StatefulWidget {
+  final Task task;
+  const EditTaskPage({required this.task , Key? key}) : super(key: key);
 
   @override
-  State<AddTaskPage> createState() => _AddTaskPageState();
+  State<EditTaskPage> createState() => _EditTaskPageState();
 }
 
-class _AddTaskPageState extends State<AddTaskPage> {
+class _EditTaskPageState extends State<EditTaskPage> {
+
   late TimeOfDay _pickedTime;
   late DateTime _pickedDate;
   late final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
@@ -34,6 +36,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    prePopulateViews();
+
     _taskController = Get.find();
     initializeNotifications();
   }
@@ -113,13 +118,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
                   },
                   decoration: InputDecoration(
-                    border: InputBorder.none,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16)
-                    ),
-                    hintText: "Task Title",
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10,vertical: 15),
-                    hintStyle: getFont().copyWith(fontSize: 13)
+                      border: InputBorder.none,
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16)
+                      ),
+                      hintText: "Task Title",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10,vertical: 15),
+                      hintStyle: getFont().copyWith(fontSize: 13)
                   ),
                 ),
               ),
@@ -168,7 +173,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       ),
                       hintText: "Task Hour",
                       suffixIcon: IconButton(onPressed: (){
-                         pickHour();
+                        pickHour();
                       }, icon: const Icon(Icons.timer_sharp)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10,vertical: 15),
                       hintStyle: getFont().copyWith(fontSize: 13)
@@ -194,27 +199,27 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       return FlutterToastr.show('Hour cannot be empty', context);
                     }
 
-                    TasksCompanion task =  TasksCompanion(
-                        title: d.Value(title),
-                        date:  d.Value(date),
-                        hour:  d.Value(hour),
-                        hourFormat: d.Value(_hourAmPm),
-                        isChecked: const d.Value(0));
-                    int result = await _taskController.insertTask(task);
+                    Task task =  Task(
+                        id: widget.task.id,
+                        title: title,
+                        date:  date,
+                        hour:  hour,
+                        hourFormat: _hourAmPm,
+                        isChecked: widget.task.isChecked);
+
+                    int result = await _taskController.updateTask(task);
                     if(result == -1){
-                      if(mounted){
-                        FlutterToastr.show("Failed to add task", context);
-                      }
-                    }
-                    else {
-                      if(mounted){
-                        scheduleAlarm(DateTime(_pickedDate.year, _pickedDate.month, _pickedDate.day, _pickedTime.hour, _pickedTime.minute), title);
-                        FlutterToastr.show("Task successfully added", context);
-                      }
+                       if(mounted){
+                         FlutterToastr.show("Could not update task", context);
+                       }
+                    } else {
+                       if(mounted){
+                         FlutterToastr.show("Task updated successfully", context);
+                       }
                     }
 
                     Future.delayed(const Duration(seconds: 2),(){
-                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
                     });
 
                   },
@@ -222,11 +227,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     width: double.maxFinite,
                     height: 50,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      color: Colors.indigo
+                        borderRadius: BorderRadius.circular(24),
+                        color: Colors.indigo
                     ),
                     child: Center(
-                      child: Text("Submit",style: getFont().copyWith(fontSize: 15,color: Colors.white),),
+                      child: Text("Update",style: getFont().copyWith(fontSize: 15,color: Colors.white),),
                     ),
                   ),
                 ),
@@ -241,8 +246,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     width: double.maxFinite,
                     height: 50,
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        color:  const Color(0xff343333ff),
+                      borderRadius: BorderRadius.circular(24),
+                      color:  const Color(0xff343333ff),
                     ),
                     child: Center(
                       child: Text("Cancel",style: getFont().copyWith(fontSize: 15,color: Colors.white),),
@@ -256,6 +261,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       ),
     );
   }
+
   void pickDate() async {
 
     var pickedDate = await showDatePicker(
@@ -290,9 +296,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
         setState(() {
           _pickedHour = df.format(dt);
           _taskHourController.text = _pickedHour;
-           _hourAmPm = dfPM.format(dt);
+          _hourAmPm = dfPM.format(dt);
         });
       }
     }
+  }
+
+  void prePopulateViews() {
+    _taskTitleController.text = widget.task.title!;
+    _taskDateController.text = widget.task.date!;
+    _taskHourController.text = widget.task.hour!;
   }
 }
