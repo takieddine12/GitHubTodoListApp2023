@@ -19,7 +19,7 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage> {
   late TimeOfDay _pickedTime;
-  late DateTime? _dateTime;
+  late DateTime _pickedDate;
   late final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   late TaskController _taskController;
   final TextEditingController _taskTitleController = TextEditingController();
@@ -197,8 +197,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     }
                     else {
                       if(mounted){
-                        print("selected date " + _dateTime.toString());
-                        scheduleAlarm(_dateTime!, title);
+                        scheduleAlarm(DateTime(_pickedDate!.year, _pickedDate.month, _pickedDate.day, _pickedTime.hour, _pickedTime.minute), title);
                         FlutterToastr.show("Task successfully added", context);
                       }
                     }
@@ -258,8 +257,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
 
     if(pickedDate != null){
-      String formattedDate = DateFormat("yyyy-MM-dd").format(pickedDate!);
-      _dateTime = DateTime(pickedDate!.year, pickedDate.month, pickedDate.day, _pickedTime.hour, _pickedTime.minute);
+      _pickedDate = pickedDate;
+      String formattedDate = DateFormat("yyyy-MM-dd").format(_pickedDate);
       setState(() {
         _pickedDay = formattedDate;
         _taskDateController.text = _pickedDay;
