@@ -207,7 +207,7 @@ class _EditTaskPageState extends State<EditTaskPage> {
                         hourFormat: _hourAmPm,
                         isChecked: widget.task.isChecked);
 
-                    int result = await _taskController.updateTask(task);
+                    int result = await _taskController.updateFullTask(task);
                     if(result == -1){
                        if(mounted){
                          FlutterToastr.show("Could not update task", context);
@@ -301,10 +301,11 @@ class _EditTaskPageState extends State<EditTaskPage> {
       }
     }
   }
-
   void prePopulateViews() {
     _taskTitleController.text = widget.task.title!;
     _taskDateController.text = widget.task.date!;
     _taskHourController.text = widget.task.hour!;
+    _hourAmPm = widget.task.hourFormat!;
   }
+
 }

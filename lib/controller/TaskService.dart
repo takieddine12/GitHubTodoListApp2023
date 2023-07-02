@@ -26,5 +26,12 @@ class TaskService {
   Future<int> updateTask(Task task) async {
     return await _myDatabase.updateTask(task);
   }
+  Future<int> updateFullTask(Task task) async {
+    return await _myDatabase.updateFullTask(task);
+  }
+
+  Future<List<Task>> getFilteredTasks(String query) async {
+    return await _myDatabase.getFilteredTasks(query);
+  }
 
 }

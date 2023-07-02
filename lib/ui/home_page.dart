@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_toastr/flutter_toastr.dart';
 import 'package:get/get.dart';
-import 'package:drift/drift.dart' as d;
 import 'package:todo_app/controller/task_controller.dart';
 import 'package:todo_app/drift/todo_helper.dart';
 import 'package:todo_app/extras.dart';
@@ -101,6 +100,11 @@ class _HomePageState extends State<HomePage> {
                           controller: _searchController,
                           onChanged: (value){
                             // filter list
+                            if(value.trim().isNotEmpty){
+                              _taskController.getFilTasks(value);
+                            } else {
+                              _taskController.getTasks();
+                            }
                           },
                           decoration: InputDecoration(
                               border: InputBorder.none,
@@ -135,7 +139,7 @@ class _HomePageState extends State<HomePage> {
               else {
                 return Expanded(
                   child: ListView.builder(
-                    itemCount: _taskController.tasksList.value!.length,
+                    itemCount: _taskController.tasksList.value!.length ,
                     itemBuilder: (context , index){
                       return Padding(
                         padding: const EdgeInsets.only(left: 16,right: 16,top: 8),
@@ -238,6 +242,10 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  void filterList(String value) {
+
   }
 
 

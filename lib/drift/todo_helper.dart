@@ -17,6 +17,8 @@ class MyDatabase extends _$MyDatabase {
   @override
   int get schemaVersion => 1;
 
+  // filter list
+  Future<List<Task>> getFilteredTasks(String query) => (select(tasks)..where((tbl) => tbl.title.equals(query))).get();
 
   Future<List<Task>> getTasks() => select(tasks).get();
 
@@ -30,6 +32,15 @@ class MyDatabase extends _$MyDatabase {
 
   Future<int> updateTask(Task task) =>
       (update(tasks)..where((tbl) => tbl.id.equals(task.id))).write(TasksCompanion(isChecked : Value(task.isChecked)));
+
+  Future<int> updateFullTask(Task task) =>
+      (update(tasks)..where((tbl) => tbl.id.equals(task.id))).write(TasksCompanion(
+          id: Value(task.id),
+          title: Value(task.title),
+          date: Value(task.date),
+          hour: Value(task.hour),
+          hourFormat: Value(task.hourFormat),
+          isChecked : Value(task.isChecked)));
 
 }
 

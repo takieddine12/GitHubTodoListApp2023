@@ -8,8 +8,8 @@ import 'TaskService.dart';
 
 class TaskController extends GetxController {
 
+  String query = "";
   final TaskService _service = TaskService();
-
   final Rx<List<Task>?> tasksList = Rx(null);
 
 
@@ -18,6 +18,12 @@ class TaskController extends GetxController {
      _service.getTasks().then((value){
        tasksList.value = value;
      });
+
+     if(query.isNotEmpty){
+       _service.getFilteredTasks(query).then((value){
+         tasksList.value = value;
+       });
+     }
   }
 
   Future<int> insertTask(TasksCompanion companion) async {
@@ -32,6 +38,15 @@ class TaskController extends GetxController {
 
   Future<int> updateTask(Task task) async {
     return await _service.updateTask(task);
+  }
+
+  Future<int> updateFullTask(Task task) async {
+    return await _service.updateFullTask(task);
+  }
+
+  Future<List<Task>> getFilTasks(String query) async {
+    query = query;
+    return await _service.getFilteredTasks(query);
   }
 
 }
