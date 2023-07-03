@@ -16,9 +16,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Task>? _tasks  = [];
   late TaskController _taskController;
   final TextEditingController _searchController = TextEditingController();
-
+  String query  = "";
 
   @override
   void initState() {
@@ -93,18 +94,14 @@ class _HomePageState extends State<HomePage> {
                   child:  Row(
                     children: [
                       const SizedBox(width: 10,),
-                      const Icon(Icons.search,color: Colors.black87, size: 25,),
-                      const SizedBox(width: 10,),
                       Expanded(
                         child: TextField(
                           controller: _searchController,
                           onChanged: (value){
-                            // filter list
-                            if(value.trim().isNotEmpty){
-                              _taskController.getFilTasks(value);
-                            } else {
-                              _taskController.getTasks();
-                            }
+                            // use this value to filter list
+                            setState(() {
+                              query = value;
+                            });
                           },
                           decoration: InputDecoration(
                               border: InputBorder.none,
@@ -112,7 +109,11 @@ class _HomePageState extends State<HomePage> {
                               hintText: "search for task.."
                           ),
                         ),
-                      )
+                      ),
+                      const SizedBox(width: 10,),
+                      IconButton(onPressed: (){
+                        _taskController.getTasks();
+                      }, icon: const Icon(Icons.search,color: Colors.black87, size: 25,))
                     ],
                   ),
                 ),
@@ -120,7 +121,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             Obx(() {
-              if(_taskController.tasksList.value == null){
+              if(query.isEmpty){
+                _tasks  = _taskController.tasksList.value!;
+              } else {
+                _tasks = _tasks!.where((element) => element.title!.toLowerCase().contains(query.toLowerCase())).toList();
+              }
+
+              if(_tasks == null){
                 return  Padding(
                   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height / 3),
                   child: const Center(
@@ -128,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               }
-              else if (_taskController.tasksList.value!.isEmpty){
+              else if (_tasks!.isEmpty){
                 return Padding(
                   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height / 3),
                   child: Center(
@@ -139,7 +146,7 @@ class _HomePageState extends State<HomePage> {
               else {
                 return Expanded(
                   child: ListView.builder(
-                    itemCount: _taskController.tasksList.value!.length ,
+                    itemCount:  _tasks!.length ,
                     itemBuilder: (context , index){
                       return Padding(
                         padding: const EdgeInsets.only(left: 16,right: 16,top: 8),
@@ -165,33 +172,33 @@ class _HomePageState extends State<HomePage> {
                           child: GestureDetector(
                             onTap: (){
                               // we send data to the next screen
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => EditTaskPage(task: _taskController.tasksList.value![index])));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => EditTaskPage(task: _tasks![index])));
                             },
                             child: Card(
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               child: Row(
                                 children: [
                                   Checkbox(
-                                      value: _taskController.tasksList.value![index].isChecked == 0 ? false : true,
+                                      value: _tasks![index].isChecked == 0 ? false : true,
                                       onChanged: (value){
                                         if(value == true){
                                           Task task = Task(
-                                              id: _taskController.tasksList.value![index].id,
-                                              title: _taskController.tasksList.value![index].title,
-                                              date: _taskController.tasksList.value![index].date,
-                                              hour: _taskController.tasksList.value![index].hour,
-                                              hourFormat: _taskController.tasksList.value![index].hour,
+                                              id:  _tasks![index].id,
+                                              title:  _tasks![index].title,
+                                              date:  _tasks![index].date,
+                                              hour:  _tasks![index].hour,
+                                              hourFormat:  _tasks![index].hour,
                                               isChecked : 1
                                           );
                                           _taskController.updateTask(task);
                                           _taskController.getTasks();
                                         } else {
                                           Task task = Task(
-                                              id: _taskController.tasksList.value![index].id,
-                                              title: _taskController.tasksList.value![index].title,
-                                              date: _taskController.tasksList.value![index].date,
-                                              hour: _taskController.tasksList.value![index].hour,
-                                              hourFormat: _taskController.tasksList.value![index].hour,
+                                              id:  _tasks![index].id,
+                                              title:  _tasks![index].title,
+                                              date:  _tasks![index].date,
+                                              hour:  _tasks![index].hour,
+                                              hourFormat:  _tasks![index].hour,
                                               isChecked : 0
                                           );
                                           _taskController.updateTask(task);
@@ -202,16 +209,16 @@ class _HomePageState extends State<HomePage> {
                                   Expanded(child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(_taskController.tasksList.value![index].title!,
-                                        style: getFont().copyWith(fontSize: 17,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
-                                      Text("On :  ${_taskController.tasksList.value![index].date!}",
-                                        style: getFont().copyWith(fontSize: 15 , color: Colors.indigo,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
-                                      Text("At :  ${_taskController.tasksList.value![index].hourFormat!}",
-                                        style: getFont().copyWith(fontSize: 15,color: Colors.green,decoration: _taskController.tasksList.value![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),)
+                                      Text( _tasks![index].title!,
+                                        style: getFont().copyWith(fontSize: 17,decoration: _tasks![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
+                                      Text("On :  ${ _tasks![index].date!}",
+                                        style: getFont().copyWith(fontSize: 15 , color: Colors.indigo,decoration:  _tasks![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),),
+                                      Text("At :  ${ _tasks![index].hourFormat!}",
+                                        style: getFont().copyWith(fontSize: 15,color: Colors.green,decoration:  _tasks![index].isChecked == 1 ? TextDecoration.lineThrough : TextDecoration.none),)
                                     ],
                                   )),
                                   Visibility(
-                                     visible: _taskController.tasksList.value![index].isChecked == 0 ? false : true,
+                                     visible:  _tasks![index].isChecked == 0 ? false : true,
                                      child :  IconButton(onPressed: () async {
                                        int result = await _taskController.deleteTask(_taskController.tasksList.value![index].id);
                                        if(result == -1){
@@ -237,6 +244,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               }
+              
             })
           ],
         ),
@@ -244,9 +252,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void filterList(String value) {
 
-  }
+
 
 
 }
